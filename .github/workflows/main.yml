@@ -1,0 +1,42 @@
+name: Build Friday Night Funkin'
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        submodules: true
+
+    - name: Install Haxe
+      uses: matthias-stuber/haxe-setup-action@v1
+      with:
+        haxe-version: "4.2.4"
+
+    - name: Install Git
+      run: sudo apt-get install git
+
+    - name: Install Visual Studio Build Tools (Windows only)
+      if: runner.os == 'Windows'
+      run: |
+        choco install visualstudio2019buildtools
+        choco install visualstudio2019-workload-vctools
+        choco install windows-sdk-10.0
+
+    - name: Setup Haxe environment
+      run: |
+        haxelib --global install hmm
+        haxelib --global run hmm setup
+        hmm install
+        haxelib run lime setup linux # Change this line if using a different platform
+
+    - name: Build game
+      run: lime test linux # Change this line if using a different platform
